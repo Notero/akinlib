@@ -1,0 +1,18 @@
+find_package(PkgConfig REQUIRED)
+find_package(SQLite3 REQUIRED)
+
+pkg_check_modules(SODIUM REQUIRED IMPORTED_TARGET libsodium)
+
+add_library(Connection SHARED Connection.cpp)
+target_include_directories(Connection PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(Database SHARED Database.cpp)
+target_link_libraries(Database PRIVATE PkgConfig::SODIUM SQLite3::SQLite3)
+target_include_directories(Database PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(SafeQueue INTERFACE SafeQueue.hpp)
+target_include_directories(SafeQueue INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(Pub INTERFACE Pub.hpp)
+target_include_directories(Pub INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(RingBuffer INTERFACE RingBuffer.hpp)
+target_include_directories(RingBuffer INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(SparseSetECS INTERFACE SparseSet.hpp)
+target_include_directories(SparseSetECS INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
