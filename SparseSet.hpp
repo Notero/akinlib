@@ -43,6 +43,9 @@ public:
 
     bool exists(const size_t& id) {return id < _sparse.size() && _sparse[id] != INVALID;}
 
+    T& getComponent(const size_t& id){
+        return _dense[_sparse[id]].second;
+    }
 
     void insert(std::pair<size_t, T> p){
         if (exists(p.first)) return;
