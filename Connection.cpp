@@ -7,6 +7,8 @@
 #include <sstream>
 #include <cassert>
 
+const int CAP = 10000;
+
 namespace {
     std::string_view trim(std::string_view view){
         bool tail = false, head = false;
@@ -85,4 +87,28 @@ bool Connection::recvMsg(std::string& out){
         assert(false && "stream should contain '\n' but doesn't");
         return false;
     }
+}
+
+
+bool Connection::sendUDP(const struct sockaddr *dest_addr, socklen_t dest_len, std::string_view msg) const 
+{
+    ssize_t a = sendto(socketFd, msg.data(), msg.length(), 0, dest_addr, dest_len);
+    if (a == -1){
+        perror("sendto");
+        return false;
+    }
+    return true;
+}
+
+bool Connection::recvUDP(struct sockaddr *dest_addr, socklen_t& dest_len, std::string& out)
+{
+    out.resize(CAP);
+    ssize_t len = recvfrom(socketFd, out.data(), out.size(), 0, dest_addr, &dest_len);
+    if(len == -1){
+        perror("recvfrom");
+        return false;
+    }
+    out.resize(len);
+
+    return true;
 }
