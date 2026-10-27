@@ -6,6 +6,8 @@
 #include <chrono>
 #include <mutex>
 #include <atomic>
+#include <optional>
+#include <functional>
 
 class Simulation
 {
@@ -46,8 +48,18 @@ public:
                 }
         }
     }
+    std::vector<std::pair<size_t, Position>> snapshot(){
+        std::lock_guard lock(mtx);
+        std::vector<std::pair<size_t, Position>> snapshot;
+        for(auto& p : posComp){
+            snapshot.push_back(p);
+        }
+        return snapshot;        
+    }
+
     //fixed rate accumulator loop ~60frames per second
-    void accumulatorLoop(std::atomic<bool>& shutdownReq){
+    void accumulatorLoop(std::atomic<bool>& shutdownReq,std::optional<std::function<void()>> serverAction)
+    {
         auto prev = std::chrono::steady_clock::now();
         while(!shutdownReq){
             auto curr = std::chrono::steady_clock::now();
@@ -57,6 +69,7 @@ public:
             while (accumulator >= fixedDt)
             {
                 tick();
+                if(serverAction){(*serverAction)();}
                 accumulator -= fixedDt;
             }
         }
