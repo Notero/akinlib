@@ -1,12 +1,10 @@
 #include <cmath>
 
-enum class UType : uint8_t {Connect, Disconnect, Input, Position, Nugde, React, Success, Spawn};
+enum class UType : uint8_t {Connect, Disconnect, Input, Position, Nugde, React, Success, Spawn, Snapshot};
 
 struct Position{
     UType type = UType::Position;
-    double x,y;
-    size_t cID;
-    size_t eID;
+    double x,y;    
 };
 
 struct Velocity{
@@ -28,7 +26,8 @@ struct Velocity{
 struct Input{
     UType type = UType::Input;
     Velocity v;
-    size_t id;
+    size_t cID;
+    size_t eID;
 };
 
 struct Ping{
