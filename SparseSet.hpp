@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <algorithm>
 
 template <typename T>
 class SparseSet
@@ -51,6 +52,34 @@ public:
         if (exists(p.first)) return;
         _sparse[p.first] = _dense.size();
         _dense.push_back(std::move(p));
+    }
+
+    void vectorInsert(std::pair<size_t, T> p){
+        if (exists(p.first)) 
+        {
+            _dense[_sparse[p.first]].second.push_back(p.second);
+            return;
+        }
+        _sparse[p.first] = _dense.size();
+        _dense.push_back(std::move(p));
+    }
+
+    void vectorExtract(size_t client,size_t id){
+        if (!exists(client)) return;
+        if(_dense[_sparse[client]].second.size() == 1){
+            _sparse[_dense[_dense.size() - 1].first] = _sparse[client];
+            _dense[_sparse[client]] = _dense[_dense.size() - 1];
+            _sparse[client] = INVALID;
+            _dense.pop_back();
+        }else{
+            auto& v = _dense[_sparse[client]].second;
+            //finds the id index in the vector
+            auto it = std::find(v.begin(), v.end(), id);
+            if (it != v.end()) {
+                *it = v.back();   // overwrite the found element with the last one
+                v.pop_back();
+            }
+        }
     }
 
     void extract(size_t id){
