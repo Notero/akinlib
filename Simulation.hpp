@@ -25,11 +25,23 @@ public:
     size_t spawn(size_t clientID){
         std::lock_guard lock(mtx);
         size_t id = entitygen.getUID();
-        owned.vectorInsert(std::pair(clientID, std::vector<size_t>{id}));
+        owned.vectorInsert(clientID, id);
         velComp.insert(std::pair(id,Velocity{0.0,0.0}));
         posComp.insert(std::pair(id,Position{UType::Position,0.0,0.0}));
         return id;
     }
+    void killAll(size_t clientID){
+        std::lock_guard lock(mtx);
+        if (!owned.exists(clientID)){return;}
+        auto& v = owned.getComponent(clientID);
+        for(auto& p : v){
+            velComp.extract(p);
+            posComp.extract(p);
+        }
+        v.clear();
+        owned.extract(clientID);
+    }
+
     void inputSpeed(const size_t& entityID, const Velocity& inputVel){
         std::lock_guard lock(mtx);
         Velocity& entityVel = velComp.getComponent(entityID);
