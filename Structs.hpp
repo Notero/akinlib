@@ -1,3 +1,4 @@
+#pragma once
 #include <cmath>
 
 enum class UType : uint8_t {Connect, Disconnect, Input, Position, Nugde, React, Success, Spawn, Snapshot};
