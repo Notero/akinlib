@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <string>
 #include <string_view>
-
+#include <sys/socket.h>
 class Connection{
 private:
     int socketFd;
