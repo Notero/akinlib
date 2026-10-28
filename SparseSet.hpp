@@ -54,13 +54,15 @@ public:
         _dense.push_back(std::move(p));
     }
 
-    void vectorInsert(std::pair<size_t, T> p){
-        if (exists(p.first)) 
+    void vectorInsert(size_t client, size_t entity){
+        if (exists(client)) 
         {
-            _dense[_sparse[p.first]].second.push_back(p.second);
+            auto& v = getComponent(client);
+            v.push_back(entity);
             return;
         }
-        _sparse[p.first] = _dense.size();
+        _sparse[client] = _dense.size();
+        std::pair<size_t, T> p(client, std::vector<size_t>{entity});
         _dense.push_back(std::move(p));
     }
 
