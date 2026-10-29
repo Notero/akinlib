@@ -8,27 +8,50 @@ namespace{
     }
 }
 
-void Client::Connect(){
-    Ping c{UType::Connect};
-    std::string_view view(reinterpret_cast<const char*>(&c), sizeof(c));
-    client->sendUDP(sp,len,view);
-    
+void Client::connect(){
+    size_t max = 15;
+    size_t curr = 0;
+    Ping z{};
     std::string conRes;
     sockaddr_in empty{};
     socklen_t esize = sizeof(empty);
     sockaddr* ssp = reinterpret_cast<sockaddr*>(&empty);
-    client->recvUDP(ssp,esize,conRes);
-    Ping z{};
+
+    while (true)
+    {
+        Ping c{UType::Connect};
+        std::string_view view(reinterpret_cast<const char*>(&c), sizeof(c));
+        client->sendUDP(sp,len,view);
+        RType r = client->recvUDP(ssp,esize,conRes);
+        if (r == RType::Error){throw std::runtime_error("recv on Client::connect() error.");}
+        if (curr == max){throw std::runtime_error("recv on Client::connect() timeout.");}
+        if (r == RType::Success) {break;}
+        curr++;
+    }
     std::memcpy(&z,conRes.data(),sizeof(z));
 
     ID = z.id;
 }
 
-void Client::Disconnect(){
+void Client::disconnect(){
     Ping d{UType::Disconnect, ID};
     std::string_view dview(reinterpret_cast<const char*>(&d), sizeof(d));
     client->sendUDP(sp,len,dview);
 }
+
+void Client::spawnReq(){
+    Ping p{UType::Spawn, ID};
+    std::string_view v(reinterpret_cast<const char*>(&p),sizeof(p));
+    client->sendUDP(sp,len,v);
+}
+
+void Client::speedReq(double x, double y,size_t entityID){
+    Input i{UType::Input, Velocity{x,y}, ID, entityID};
+    std::string_view v(reinterpret_cast<const char*>(&i),sizeof(i));
+    client->sendUDP(sp, len, v);
+}
+
+std::vector<size_t> Client::getOwned(){return eID;}
 
 void Client::GUI(){
     while (!shutdownReq)
@@ -42,9 +65,7 @@ void Client::GUI(){
         {
         case 1:
             {
-                Ping p{UType::Spawn, ID};
-                std::string_view v(reinterpret_cast<const char*>(&p),sizeof(p));
-                client->sendUDP(sp,len,v);
+                spawnReq();
             }
             break;
         case 2:
@@ -65,9 +86,7 @@ void Client::GUI(){
                 std::cin >> x;
                 std::cout << "Enter speed towards y" << std::endl;
                 std::cin >> y;
-                Input i{UType::Input, Velocity{x,y}, ID, entityID};
-                std::string_view v(reinterpret_cast<const char*>(&i),sizeof(i));
-                client->sendUDP(sp, len, v);
+                speedReq(x,y,entityID);
             }
             break;
         case 3:
@@ -128,13 +147,7 @@ void Client::receiver(){
                     snapshots.push(s);
                 }
 
-                tickCount++;
-                if (tickCount % 10 == 0) 
-                {
-                    for(auto& r: rv){
-                        std::cout << "entity id==" << r.first << " | Position x" << r.second.x << " y" << r.second.y << std::endl;
-                    }
-                }
+
             }
             break;
         case UType::Spawn:
@@ -144,6 +157,16 @@ void Client::receiver(){
                 {
                     std::lock_guard lock(mtx);
                     eID.push_back(spawn.id);
+                }
+            }
+            break;
+        case UType::Disconnect:
+            {
+                Ping disc{};
+                std::memcpy(&disc,response.data(),sizeof(disc));
+                if (disc.id == ID)
+                {
+                    return;
                 }
             }
             break;
@@ -182,10 +205,12 @@ Client::Client() : snapshots(10)
     if(sigaction(SIGINT, &sa, nullptr) == -1){
         perror("sigaction");
     }
+    setsockopt(client->get_fd(),SOL_SOCKET,SO_RCVTIMEO,&on,sizeof(on));
 }
 
 Client::~Client(){
-    shutdown(client->get_fd(), SHUT_RDWR);
+    
+    disconnect();
     if(receiverThread.joinable()){
         receiverThread.join();
     }

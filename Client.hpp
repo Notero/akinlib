@@ -29,6 +29,7 @@ struct Snapshot{
 class Client
 {
 private:
+    struct timeval on{1};
     size_t ID;
     std::vector<size_t> eID;
     std::thread receiverThread;
@@ -38,16 +39,20 @@ private:
     sockaddr_in dest;
     socklen_t len;
     sockaddr* sp;
+
+    void receiver();
     
 public:
     explicit Client();
     ~Client();
 
-
+    size_t getID(){return ID;}
     void GUI();
-    void Connect();
-    void Disconnect();
-    void receiver();
+    void spawnReq();
+    void speedReq(double x, double y,size_t entityID);
+    void connect();
+    void disconnect();
     void startReceiver();
     
+    std::vector<size_t> getOwned();
 };
