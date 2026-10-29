@@ -60,7 +60,7 @@ public:
         }
         buffer[tail] = value;
         count++;
-        tail = (tail + 1) % capacity;
+        tail = pnext(tail,capacity);
         return true;
     }
 
@@ -71,7 +71,7 @@ public:
         }
         count--;
         T temp = buffer[head];
-        head = (head + 1) % capacity;
+        head = pnext(head,capacity);
         return temp;
     }
 
@@ -81,5 +81,7 @@ public:
         }
         return buffer[head];
     }
+
+    static constexpr size_t pnext(size_t i, const size_t cap){return (i + 1) % cap;}
 
 };
