@@ -81,6 +81,16 @@ public:
         }
         return buffer[head];
     }
+    
+    // constexpr means that at compile time or runtime this value will resolve to a value
+    // constexpr:
+    // 1. pnext(1, 10) => will work as the function has values inputted
+    // 2. int i = 1; int c = 10; pnext(i, c); => will also work as i and c will resolve to actual values (if it was int i; it wouldnt work)
+
+    // consteval would mean it should already have the literals already in this function
+    // consteval:
+    // 1. pnext(1, 10) => will work as the function has values inputted
+    // 2. int i = 1; int c = 10; pnext(i, c); => will not work as its a runtime promise consteval wont provide
 
     static constexpr size_t pnext(size_t i, const size_t cap){return (i + 1) % cap;}
 
