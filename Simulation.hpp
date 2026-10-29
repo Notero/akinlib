@@ -74,6 +74,7 @@ public:
     {
         auto prev = std::chrono::steady_clock::now();
         while(!shutdownReq){
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
             auto curr = std::chrono::steady_clock::now();
             std::chrono::duration<double> frameTime = curr - prev;
             prev = curr;
