@@ -3,8 +3,24 @@
 #include <memory>
 #include <optional>
 #include <cstddef>
+#include <concepts>
+#include <iterator>
 
-template<typename T> 
+//  concept practice//
+//  concept for the copyable and default initializable together
+//  using actual mechanisms from the class is usable
+//  use natives as long as one is present 
+template<typename T>
+concept copyableNdefaultI = requires(T a,T b,T c[],size_t d){
+    a = b; //is it copyable?
+    std::make_unique<T[]>(d); 
+};
+
+//  NATIVES for this
+//  T in this code should be copyable and default initializable
+//  requires std::default_initializable<T> && std::copyable<T>
+template<typename T>
+requires std::default_initializable<T> && std::copyable<T>
 class RingBuffer {
 private:
 
@@ -16,6 +32,7 @@ private:
     std::unique_ptr<T[]> buffer;
 
 public:
+
     //make unique can appoint memory that deletes itself.
     explicit RingBuffer(const size_t cap): head(0), tail(0), count(0), capacity(cap), buffer(std::make_unique<T[]>(capacity)) {}
     class Iterator
@@ -27,11 +44,11 @@ public:
         int mem;
 
     public:
-    using value_type = T;
-    using pointer = T*;
-    using reference = T&;
-    using difference_type = std::ptrdiff_t;
-    using iterator_category = std::forward_iterator_tag;
+        using value_type = T;
+        using pointer = T*;
+        using reference = T&;
+        using difference_type = std::ptrdiff_t;
+        using iterator_category = std::forward_iterator_tag;
 
         Iterator(T* h, T* firstAddy, T* lastAddy, int count) : ptr(h), firstAddress(firstAddy), lastAddress(lastAddy), mem(count) {}
 
@@ -49,7 +66,7 @@ public:
             return mem != other.mem;  
         }
     };
-    
+
     Iterator begin(){return Iterator(buffer.get() + head, buffer.get(), buffer.get() + capacity, count);}
     Iterator end(){return Iterator(buffer.get() + tail, buffer.get(), buffer.get() + capacity, 0);}
 
@@ -81,7 +98,7 @@ public:
         }
         return buffer[head];
     }
-    
+
     // constexpr means that at compile time or runtime this value will resolve to a value
     // constexpr:
     // 1. pnext(1, 10) => will work as the function has values inputted
