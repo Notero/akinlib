@@ -4,6 +4,8 @@
 #include <string>
 #include <string_view>
 #include <sys/socket.h>
+#include "Structs.hpp"
+
 class Connection{
 private:
     int socketFd;
@@ -32,5 +34,5 @@ public:
     bool sendMsg(std::string_view msg) const;
     bool recvMsg(std::string& out);
     bool sendUDP(const struct sockaddr *dest_addr, socklen_t dest_len,std::string_view msg) const;
-    bool recvUDP(struct sockaddr *dest_addr, socklen_t& dest_len, std::string& out);
+    RType recvUDP(struct sockaddr *dest_addr, socklen_t& dest_len, std::string& out);
 };

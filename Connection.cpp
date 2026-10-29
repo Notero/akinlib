@@ -1,4 +1,5 @@
 #include "Connection.hpp"
+#include "Structs.hpp"
 
 #include <sys/socket.h>
 #include <cerrno>
@@ -100,15 +101,19 @@ bool Connection::sendUDP(const struct sockaddr *dest_addr, socklen_t dest_len, s
     return true;
 }
 
-bool Connection::recvUDP(struct sockaddr *dest_addr, socklen_t& dest_len, std::string& out)
+RType Connection::recvUDP(struct sockaddr *dest_addr, socklen_t& dest_len, std::string& out)
 {
     out.resize(CAP);
     ssize_t len = recvfrom(socketFd, out.data(), out.size(), 0, dest_addr, &dest_len);
     if(len == -1){
+        if (errno == EAGAIN)
+        {
+            return RType::Timeout;
+        }
+        
         perror("recvfrom");
-        return false;
+        return RType::Error;
     }
     out.resize(len);
-
-    return true;
+    return RType::Success;
 }
