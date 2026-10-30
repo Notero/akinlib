@@ -11,13 +11,15 @@ struct EOne : Event
     int val;
 };
 
-template<typename E>
-concept event = std::derived_from<E, Event>;
 
 
 // real type check if a T is a actually derived from a Event struct Tag
 // a concept definition is just template<typename T> concept Name = <some compile-time boolean expression>;
+template<typename E>
+concept event = std::derived_from<E, Event>;
 
+template<typename E, typename... H>
+concept handler = (std::same_as<H, std::function<void(const E&)>> && ...);
 
 
 class EventHandler
@@ -46,6 +48,10 @@ public:
         for(auto& h: vec){
             (std::any_cast<std::function<void(const E&)>>(h))(dispatchedEvent);
         }
+    }
+    template<typename... Handlers>
+    void subscribeMant(Handlers... e){
+
     }
 
 };
