@@ -29,7 +29,4 @@ Shared C++ components built across the [CPP/Path](https://github.com/Notero) pro
 
 ## Build
 
-```
-cmake -S . -B build
-cmake --build build
-```
+This is a CMake component library, not a standalone project — it's meant to be pulled in as a git submodule and added via `add_subdirectory(library)` from a parent project's own `CMakeLists.txt` (`project()`, compiler settings, etc. are the consumer's responsibility). See [ecs-multiplayer-sim-server](https://github.com/Notero/ecs-multiplayer-sim-server) or [cpp-tcp-chat-server](https://github.com/Notero/cpp-tcp-chat-server) for working consumers.
