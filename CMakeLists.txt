@@ -1,12 +1,21 @@
 find_package(PkgConfig REQUIRED)
 find_package(SQLite3 REQUIRED)
 
+# FindSQLite3's imported target name changed across CMake versions:
+# older CMake (common on Linux) exports only SQLite::SQLite3; newer CMake
+# exports (and prefers) SQLite3::SQLite3, keeping the old name as a deprecated alias.
+if(TARGET SQLite3::SQLite3)
+    set(SQLITE3_TARGET SQLite3::SQLite3)
+else()
+    set(SQLITE3_TARGET SQLite::SQLite3)
+endif()
+
 pkg_check_modules(SODIUM REQUIRED IMPORTED_TARGET libsodium)
 
 add_library(Connection SHARED Connection.cpp)
 target_include_directories(Connection PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 add_library(Database SHARED Database.cpp)
-target_link_libraries(Database PRIVATE PkgConfig::SODIUM SQLite3::SQLite3)
+target_link_libraries(Database PRIVATE PkgConfig::SODIUM ${SQLITE3_TARGET})
 target_include_directories(Database PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 add_library(SafeQueue INTERFACE SafeQueue.hpp)
 target_include_directories(SafeQueue INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})

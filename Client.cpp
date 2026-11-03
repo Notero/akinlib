@@ -1,5 +1,6 @@
 #include "Client.hpp"
 #include <stdexcept>
+#include <cstring>
 
 namespace{
     //signal for option+c or shutdown

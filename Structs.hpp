@@ -1,5 +1,6 @@
 #pragma once
 #include <cmath>
+#include <cstdint>
 
 enum class UType : uint8_t {Connect, Disconnect, Input, Position, Nugde, React, Success, Spawn, Snapshot};
 enum class RType: uint8_t {Success,Error,Timeout};

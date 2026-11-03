@@ -8,6 +8,13 @@
 #include <sstream>
 #include <cassert>
 
+// macOS/BSD has no MSG_NOSIGNAL (SIGPIPE suppression there is per-socket via
+// the SO_NOSIGPIPE setsockopt option instead); on Linux this flag suppresses
+// SIGPIPE per-call. Define it as a no-op where it doesn't exist.
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
+#endif
+
 const int CAP = 10000;
 
 namespace {
@@ -29,7 +36,7 @@ bool Connection::sendMsg(std::string_view msg) const
     const char* p = msg.data();
     size_t left = msg.size();
     while (left > 0) {
-        ssize_t n = send(socketFd, p, left, 0);
+        ssize_t n = send(socketFd, p, left, MSG_NOSIGNAL);
         if (n == -1) {
             if (errno == EINTR) continue;  // interrupted by a signal: just retry
             perror("send");

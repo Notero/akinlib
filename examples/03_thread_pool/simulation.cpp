@@ -59,12 +59,15 @@ int main()
     }
 
     Connection c(b);
+#ifdef SO_NOSIGPIPE
+    // macOS/BSD-only socket option; Linux suppresses SIGPIPE per-send via
+    // MSG_NOSIGNAL instead (handled inside Connection::sendMsg).
     int on = 1;
-
     if (setsockopt(c.get_fd(),SOL_SOCKET,SO_NOSIGPIPE,&on,sizeof(on)) == -1){
         perror("setsockopt");
         continue;
     }
+#endif
 
     std::thread t(bot,std::move(c),i);
     av.push_back(std::move(t));
